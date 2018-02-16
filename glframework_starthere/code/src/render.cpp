@@ -113,14 +113,8 @@ void GLinit(int width, int height) {
 	Axis::setupAxis();
 	Cube::setupCube();*/
 
-
-
-
-
-
-
-
-
+	//MyFirstShader::myInitCode();
+	Cube::setupCube();
 
 }
 
@@ -129,10 +123,15 @@ void GLcleanup() {
 	Axis::cleanupAxis();
 	Cube::cleanupCube();
 */
-
+	//MyFirstShader::myCleanupCode();
+	Cube::cleanupCube();
 
 }
 void GLrender(double currentTime) {
+
+	//Trasteando
+	RV::rota[0]+=0.1;
+	RV::panv[0]=sinf(currentTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	RV::_modelView = glm::mat4(1.f);
@@ -148,11 +147,13 @@ void GLrender(double currentTime) {
 	Cube::drawCube();*/
 
 	//PINTAR DE COLOR VERMELL EL BUFFER
-	const GLfloat color[] = { sinf((float)currentTime)*0.5+0.5f,cosf((float)currentTime)*0.5+0.5f,0.0f,1.0f };
-	glClearBufferfv(GL_COLOR, 0, color);
+	/*const GLfloat color[] = { sinf((float)currentTime)*0.5+0.5f,cosf((float)currentTime)*0.5+0.5f,0.0f,1.0f };
+	glClearBufferfv(GL_COLOR, 0, color);*/
 
-
+	//MyFirstShader::myRenderCode(currentTime);
+	Cube::drawCube();
 	ImGui::Render();
+	
 }
 
 
@@ -1008,28 +1009,69 @@ namespace MyFirstShader {
 		"#version 330\n\
 		\n\
 		void main(){\n\
-		gl_Position=vec4(0.0,0.0,0.5,1.0);\n\}\
-		"
+		const vec4 vertices[3]=vec4[3](vec4(0.25,0.25,0.5,1.0),\n\
+			vec4(-0.25,-0.25,0.5,1.0),\n\
+			vec4(0.25,-0.25,0.5,1.0));\n\
+		gl_Position=vertices[gl_VertexID];\n\
+	}"
+	};
+
+	static const GLchar* fragment_shade_source[] =
+	{
+		"#version 330\n\
+		\n\
+		out vec4 color;\n\
+		void main(){\n\
+		color=vec4(0.0,0.8,1.0,1.0);\n\
+	}"
 	};
 	//2. compile and link the shaders
 	GLuint myShaderCompile()
 	{
-		return 0;
+		GLuint vertex_shader;
+		GLuint fragment_shader;
+		GLuint program;
+
+		vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertex_shader, 1, vertex_shade_source, NULL);
+		glCompileShader(vertex_shader);
+
+		fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment_shader, 1, fragment_shade_source, NULL);
+		glCompileShader(fragment_shader);
+
+		program = glCreateProgram();
+		glAttachShader(program, vertex_shader);
+		glAttachShader(program, fragment_shader);
+		glLinkProgram(program);
+
+		glDeleteShader(vertex_shader);
+		glDeleteShader(fragment_shader);
+
+		return program;
 	}
 		//3. init function
 	void myInitCode()
 	{
-
+		myRenderProgram = myShaderCompile();
+		glCreateVertexArrays(1, &myVAO);
+		glBindVertexArray(myVAO);
 	}
 
 		//4. render function
 	void myRenderCode(double currentTime)
 	{
+		const GLfloat color[] = { sinf((float)currentTime)*0.5 + 0.5f,cosf((float)currentTime)*0.5 + 0.5f,0.0f,1.0f };
+		glClearBufferfv(GL_COLOR, 0, color);
 
+		glUseProgram(myRenderProgram);
+		glPointSize(40.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
 		//5. cleanup function
 	void myCleanupCode()
 	{
-
+		glDeleteVertexArrays(1,&myVAO);
+		glDeleteProgram(myRenderProgram);
 	}
 }

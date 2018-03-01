@@ -26,6 +26,7 @@ namespace Cube {
 	void cleanupCube();
 	void updateCube(const glm::mat4& transform);
 	void drawCube();
+	void draw2Cube();
 }
 
 namespace MyFirstShader {
@@ -70,6 +71,9 @@ void GLResize(int width, int height) {
 	glViewport(0, 0, width, height);
 	if(height != 0) RV::_projection = glm::perspective(RV::FOV, (float)width / (float)height, RV::zNear, RV::zFar);
 	else RV::_projection = glm::perspective(RV::FOV, 0.f, RV::zNear, RV::zFar);
+
+	/*float scale = 50.0f;
+	RV::_projection = glm::ortho(-(float)width/ scale, (float)width / scale, -(float)height/ scale, (float)height/ scale,RV::zNear,RV::zFar);*/
 }
 
 void GLmousecb(MouseEvent ev) {
@@ -109,8 +113,8 @@ void GLinit(int width, int height) {
 	RV::_projection = glm::perspective(RV::FOV, (float)width/(float)height, RV::zNear, RV::zFar);
 
 	// Setup shaders & geometry
-	/*Box::setupCube();
-	Axis::setupAxis();
+	Box::setupCube();
+	/*Axis::setupAxis();
 	Cube::setupCube();*/
 
 	//MyFirstShader::myInitCode();
@@ -119,8 +123,8 @@ void GLinit(int width, int height) {
 }
 
 void GLcleanup() {
-	/*Box::cleanupCube();
-	Axis::cleanupAxis();
+	Box::cleanupCube();
+	/*Axis::cleanupAxis();
 	Cube::cleanupCube();
 */
 	//MyFirstShader::myCleanupCode();
@@ -129,29 +133,44 @@ void GLcleanup() {
 }
 void GLrender(double currentTime) {
 
-	//Trasteando
-	RV::rota[0]+=0.1;
-	RV::panv[0]=sinf(currentTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	static float x,x2;
+
+	//Cub1
+	x += 0.1f;
+	if (x >= 10.0f)x = 1.0f;
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(x, 2.0f, 0.0f));
+	Cube::updateCube(modelMatrix);
+	Cube::drawCube();
+
+	//Cub2
+	modelMatrix = glm::mat4(1.0f);
+	x2 -= 0.1f;
+	if (x2 <= -10.0f)
+	{
+		x2 = 0.0f;
+	}
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.0f, 0.0f));
+	Cube::updateCube(modelMatrix);
+	Cube::draw2Cube();
+
+	//Camera
+	/*RV::panv[0] += 0.1f;
+	if (RV::panv[0] >= 10.0f)RV::panv[0] = 0.0f;
 	RV::_modelView = glm::mat4(1.f);
 	RV::_modelView = glm::translate(RV::_modelView, glm::vec3(RV::panv[0], RV::panv[1], RV::panv[2]));
 	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[1], glm::vec3(1.f, 0.f, 0.f));
-	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));
+	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));*/
+
+	glm::vec3 c = glm::vec3(0.0f,5.0f,10.0f);
+	RV::_modelView = glm::lookAt(c, glm::vec3(x, 0.0f, 0.0f),glm::vec3(0.0f,1.0f,0.0f));
 
 	RV::_MVP = RV::_projection * RV::_modelView;
 
-	// render code
-	/*Box::drawCube();
-	Axis::drawAxis();
-	Cube::drawCube();*/
+	Box::drawCube();
 
-	//PINTAR DE COLOR VERMELL EL BUFFER
-	/*const GLfloat color[] = { sinf((float)currentTime)*0.5+0.5f,cosf((float)currentTime)*0.5+0.5f,0.0f,1.0f };
-	glClearBufferfv(GL_COLOR, 0, color);*/
-
-	//MyFirstShader::myRenderCode(currentTime);
-	Cube::drawCube();
 	ImGui::Render();
 	
 }
@@ -998,6 +1017,21 @@ void main() {\n\
 		glDisable(GL_PRIMITIVE_RESTART);
 	}
 
+	void draw2Cube() {
+		glEnable(GL_PRIMITIVE_RESTART);
+		glBindVertexArray(cubeVao);
+		glUseProgram(cubeProgram);
+		glUniformMatrix4fv(glGetUniformLocation(cubeProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
+		glUniformMatrix4fv(glGetUniformLocation(cubeProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
+		glUniformMatrix4fv(glGetUniformLocation(cubeProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
+		glUniform4f(glGetUniformLocation(cubeProgram, "color"), 1.0f, 0.0f, 0.0f, 0.f);
+		glDrawElements(GL_TRIANGLE_STRIP, numVerts, GL_UNSIGNED_BYTE, 0);
+
+		glUseProgram(0);
+		glBindVertexArray(0);
+		glDisable(GL_PRIMITIVE_RESTART);
+	}
+
 
 }
 
@@ -1050,7 +1084,8 @@ namespace MyFirstShader {
 
 		return program;
 	}
-		//3. init function
+	
+	//3. init function
 	void myInitCode()
 	{
 		myRenderProgram = myShaderCompile();
@@ -1058,7 +1093,7 @@ namespace MyFirstShader {
 		glBindVertexArray(myVAO);
 	}
 
-		//4. render function
+	//4. render function
 	void myRenderCode(double currentTime)
 	{
 		const GLfloat color[] = { sinf((float)currentTime)*0.5 + 0.5f,cosf((float)currentTime)*0.5 + 0.5f,0.0f,1.0f };
@@ -1068,7 +1103,8 @@ namespace MyFirstShader {
 		glPointSize(40.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
-		//5. cleanup function
+	
+	//5. cleanup function
 	void myCleanupCode()
 	{
 		glDeleteVertexArrays(1,&myVAO);

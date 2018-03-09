@@ -1,0 +1,22 @@
+﻿  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_sdl_gl3.cpp
+  main.cpp
+  my_render_code.cpp
+src\my_render_code.cpp(137): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+src\my_render_code.cpp(152): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  physics.cpp
+  render.cpp
+src\render.cpp(1101): warning C4838: conversion from 'double' to 'const GLfloat' requires a narrowing conversion
+src\render.cpp(1101): warning C4244: 'initializing': conversion from 'double' to 'const GLfloat', possible loss of data
+  render_prims.cpp
+     Creating library C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_starthere\x64\Release\GL_framework.lib and object C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_starthere\x64\Release\GL_framework.exp
+  Generating code
+  All 1279 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  GL_framework.vcxproj -> C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_starthere\x64\Release\GL_framework.exe
+  C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_starthere\code\libs\glew32.dll
+  1 File(s) copied
+  C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_starthere\code\libs\SDL2.dll
+  1 File(s) copied

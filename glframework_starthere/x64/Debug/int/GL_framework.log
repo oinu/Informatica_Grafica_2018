@@ -1,7 +1,8 @@
 ﻿  render.cpp
-c:\users\esalles\desktop\informatica_grafica_2018\glframework_starthere\code\src\render.cpp(1099): warning C4838: conversion from 'double' to 'const GLfloat' requires a narrowing conversion
-c:\users\esalles\desktop\informatica_grafica_2018\glframework_starthere\code\src\render.cpp(1099): warning C4244: 'initializing': conversion from 'double' to 'const GLfloat', possible loss of data
-  GL_framework.vcxproj -> C:\Users\esalles\Desktop\Informatica_Grafica_2018\glframework_starthere\x64\Debug\GL_framework.exe
-  GL_framework.vcxproj -> C:\Users\esalles\Desktop\Informatica_Grafica_2018\glframework_starthere\x64\Debug\GL_framework.pdb (Partial PDB)
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_starthere\code\src\render.cpp(1101): warning C4838: conversion from 'double' to 'const GLfloat' requires a narrowing conversion
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_starthere\code\src\render.cpp(1101): warning C4244: 'initializing': conversion from 'double' to 'const GLfloat', possible loss of data
+  main.cpp
+  Generating Code...
+  GL_framework.vcxproj -> C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_starthere\x64\Debug\GL_framework.exe
   0 File(s) copied
   0 File(s) copied

@@ -6,6 +6,15 @@
 
 #include "GL_framework.h"
 
+
+namespace MyRender
+{
+	GLuint myShaderCompile();
+	void myInitCode();
+	void myRenderCode(double currentTime);
+	void myCleanupCode();
+}
+
 ///////// fw decl
 namespace ImGui {
 	void Render();
@@ -113,23 +122,17 @@ void GLinit(int width, int height) {
 	RV::_projection = glm::perspective(RV::FOV, (float)width/(float)height, RV::zNear, RV::zFar);
 
 	// Setup shaders & geometry
-	Box::setupCube();
-	/*Axis::setupAxis();
-	Cube::setupCube();*/
+	/*Box::setupCube();
+	Axis::setupAxis();
 
-	//MyFirstShader::myInitCode();
-	Cube::setupCube();
+	Cube::setupCube();*/
 
 }
 
 void GLcleanup() {
 	Box::cleanupCube();
-	/*Axis::cleanupAxis();
+	Axis::cleanupAxis();
 	Cube::cleanupCube();
-*/
-	//MyFirstShader::myCleanupCode();
-	Cube::cleanupCube();
-
 }
 void GLrender(double currentTime) {
 
@@ -171,8 +174,7 @@ void GLrender(double currentTime) {
 
 	Box::drawCube();
 
-	ImGui::Render();
-	
+	ImGui::Render();	
 }
 
 

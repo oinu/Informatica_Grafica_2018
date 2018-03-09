@@ -23,6 +23,7 @@ extern void GLrender(double currentTime);
 extern void myRenderCode(double currentTime);
 extern void myCleanupCode(void);
 extern void myInitCode(void);
+extern void GetStatus(int n);
 
 //////
 namespace {
@@ -108,6 +109,27 @@ int main(int argc, char** argv) {
 			case SDL_WINDOWEVENT:
 				if (eve.window.event == SDL_WINDOWEVENT_RESIZED) {
 					GLResize(eve.window.data1, eve.window.data2);
+				}
+				break;
+			case SDL_KEYDOWN:
+				if (eve.key.keysym.scancode == SDL_SCANCODE_1)
+				{
+					printf("Exercise 1: Travelling\n");
+					GetStatus(1);
+				}
+				else if (eve.key.keysym.scancode == SDL_SCANCODE_2)
+				{
+					printf("Exercise 2: Open and Close Field Of View\n");
+					GetStatus(2);
+				}
+				else if (eve.key.keysym.scancode == SDL_SCANCODE_3)
+				{
+					printf("Exercise 3: Dolly Efect\n");
+					GetStatus(3);
+				}
+				else if (eve.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+				{
+					quit_app = true;
 				}
 				break;
 			case SDL_QUIT:

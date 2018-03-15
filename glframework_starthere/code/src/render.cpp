@@ -7,14 +7,6 @@
 #include "GL_framework.h"
 
 
-namespace MyRender
-{
-	GLuint myShaderCompile();
-	void myInitCode();
-	void myRenderCode(double currentTime);
-	void myCleanupCode();
-}
-
 ///////// fw decl
 namespace ImGui {
 	void Render();
@@ -126,6 +118,7 @@ void GLinit(int width, int height) {
 	Axis::setupAxis();
 
 	Cube::setupCube();*/
+	MyFirstShader::myInitCode();
 
 }
 
@@ -133,6 +126,7 @@ void GLcleanup() {
 	Box::cleanupCube();
 	Axis::cleanupAxis();
 	Cube::cleanupCube();
+	MyFirstShader::myCleanupCode();
 }
 void GLrender(double currentTime) {
 
@@ -174,7 +168,9 @@ void GLrender(double currentTime) {
 
 	Box::drawCube();
 
-	ImGui::Render();	
+	ImGui::Render();
+
+	MyFirstShader::myRenderCode(currentTime);
 }
 
 
@@ -1061,11 +1057,29 @@ namespace MyFirstShader {
 		color=vec4(0.0,0.8,1.0,1.0);\n\
 	}"
 	};
+
+	static const GLchar* geom_shader_source[] =
+	{
+		"#version 330\n\
+		layout(triangles) in;\n\
+		layout(triangles_strip, max_vertices=3) out;\n\
+		void main()\n\
+		{\n\
+			for(int i =0; i<3; i++)\n\
+			{\n\
+				gl_Position=gl_in[i].gl_Position;\n\
+				EmitVertex();\n\
+			}\n\
+			EndPrimitive();\n\
+		}"
+	};
+
 	//2. compile and link the shaders
 	GLuint myShaderCompile()
 	{
 		GLuint vertex_shader;
 		GLuint fragment_shader;
+		GLuint geom_shader;
 		GLuint program;
 
 		vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -1076,13 +1090,19 @@ namespace MyFirstShader {
 		glShaderSource(fragment_shader, 1, fragment_shade_source, NULL);
 		glCompileShader(fragment_shader);
 
+		geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(geom_shader, 1, geom_shader_source, NULL);
+		glCompileShader(geom_shader);
+
 		program = glCreateProgram();
 		glAttachShader(program, vertex_shader);
 		glAttachShader(program, fragment_shader);
+		glAttachShader(program, geom_shader);
 		glLinkProgram(program);
 
 		glDeleteShader(vertex_shader);
 		glDeleteShader(fragment_shader);
+		glDeleteShader(geom_shader);
 
 		return program;
 	}

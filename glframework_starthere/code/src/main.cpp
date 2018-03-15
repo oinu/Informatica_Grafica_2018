@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 	//PhysicsInit();
 
 	//S'HA DE CREAR EN EL MY_RENDER_CODE
-	myInitCode();
+	//myInitCode();
 
 	
 	// Setup ImGui binding

@@ -132,7 +132,7 @@ void GLrender(double currentTime) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	/*glm::mat4 modelMatrix = glm::mat4(1.0f);
 	static float x,x2;
 
 	//Cub1
@@ -159,14 +159,14 @@ void GLrender(double currentTime) {
 	RV::_modelView = glm::mat4(1.f);
 	RV::_modelView = glm::translate(RV::_modelView, glm::vec3(RV::panv[0], RV::panv[1], RV::panv[2]));
 	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[1], glm::vec3(1.f, 0.f, 0.f));
-	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));*/
+	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));
 
 	glm::vec3 c = glm::vec3(0.0f,5.0f,10.0f);
 	RV::_modelView = glm::lookAt(c, glm::vec3(x, 0.0f, 0.0f),glm::vec3(0.0f,1.0f,0.0f));
 
 	RV::_MVP = RV::_projection * RV::_modelView;
 
-	Box::drawCube();
+	Box::drawCube();*/
 
 	ImGui::Render();
 
@@ -1038,14 +1038,35 @@ namespace MyFirstShader {
 	//1. define the shader source code
 	static const GLchar* vertex_shade_source[] =
 	{
-		"#version 330\n\
-		\n\
-		void main(){\n\
-		const vec4 vertices[3]=vec4[3](vec4(0.25,0.25,0.5,1.0),\n\
-			vec4(-0.25,-0.25,0.5,1.0),\n\
-			vec4(0.25,-0.25,0.5,1.0));\n\
-		gl_Position=vertices[gl_VertexID];\n\
-	}"
+		"#version 330														\n\
+		uniform float time;													\n\
+																			\n\
+		void main() {														\n\
+		 gl_Position = vec4( 0.25, -0.25 , 0.5 ,1.0);							\n\
+		}"
+	};
+
+	static const GLchar* geom_shader_source[] =
+	{
+		"#version 330												\n\
+				layout(triangles) in;									\n\
+				uniform mat4 rotationMatrix;								\n\
+				uniform float time;										\n\
+				layout(triangle_strip, max_vertices = 4) out;			\n\
+																		\n\
+				void main()												\n\
+				{														\n\
+					vec4 vertices[4] = vec4[4]							\n\
+						(vec4(0.5, -0.5, 0, 1.0),			\n\
+						vec4(0.5, 0.5, 0, 1.0),			\n\
+						vec4(-0.5,-0.5, 0, 1.0),			\n\
+						vec4(-0.5, 0.5, 0, 1.0));			\n\
+					for (int i = 0; i < 4; i++)							\n\
+					{													\n\
+						gl_Position = vertices[i] * rotationMatrix;		\n\
+						EmitVertex();									\n\
+					}													\n\
+					EndPrimitive();								}"
 	};
 
 	static const GLchar* fragment_shade_source[] =
@@ -1058,52 +1079,37 @@ namespace MyFirstShader {
 	}"
 	};
 
-	static const GLchar* geom_shader_source[] =
-	{
-		"#version 330\n\
-		layout(triangles) in;\n\
-		layout(triangles_strip, max_vertices=3) out;\n\
-		void main()\n\
-		{\n\
-			for(int i =0; i<3; i++)\n\
-			{\n\
-				gl_Position=gl_in[i].gl_Position;\n\
-				EmitVertex();\n\
-			}\n\
-			EndPrimitive();\n\
-		}"
-	};
-
 	//2. compile and link the shaders
 	GLuint myShaderCompile()
 	{
 		GLuint vertex_shader;
-		GLuint fragment_shader;
 		GLuint geom_shader;
+		GLuint fragment_shader;
 		GLuint program;
 
 		vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex_shader, 1, vertex_shade_source, NULL);
 		glCompileShader(vertex_shader);
 
-		fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragment_shader, 1, fragment_shade_source, NULL);
-		glCompileShader(fragment_shader);
-
 		geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
 		glShaderSource(geom_shader, 1, geom_shader_source, NULL);
 		glCompileShader(geom_shader);
 
+		fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment_shader, 1, fragment_shade_source, NULL);
+		glCompileShader(fragment_shader);
+
+
 		program = glCreateProgram();
 		glAttachShader(program, vertex_shader);
-		glAttachShader(program, fragment_shader);
 		glAttachShader(program, geom_shader);
+		glAttachShader(program, fragment_shader);
 		glLinkProgram(program);
 
 		glDeleteShader(vertex_shader);
-		glDeleteShader(fragment_shader);
 		glDeleteShader(geom_shader);
-
+		glDeleteShader(fragment_shader);
+		
 		return program;
 	}
 	
@@ -1116,13 +1122,21 @@ namespace MyFirstShader {
 	}
 
 	//4. render function
+	static float rot;
 	void myRenderCode(double currentTime)
 	{
-		const GLfloat color[] = { sinf((float)currentTime)*0.5 + 0.5f,cosf((float)currentTime)*0.5 + 0.5f,0.0f,1.0f };
-		glClearBufferfv(GL_COLOR, 0, color);
-
 		glUseProgram(myRenderProgram);
-		glPointSize(40.0f);
+		glUniform1f(glGetUniformLocation(myRenderProgram, "time"), (GLfloat)currentTime);
+
+		glm::mat4 matrix;
+		rot +=2;
+		if (rot >= 360.0f)
+		{
+			rot = 0.0f;
+		}
+
+		matrix = glm::rotate(matrix, RV::panv[0],glm::vec3(0.0f,1.0f,0.0f));
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "rotationMatrix"), 1,GL_FALSE, glm::value_ptr(matrix));
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
 	

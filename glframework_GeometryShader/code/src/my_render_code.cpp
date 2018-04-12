@@ -38,6 +38,15 @@ namespace RenderVars {
 	extern float rota[2];
 }
 namespace RV = RenderVars;
+namespace MyObject {
+	GLuint myShaderCompile();
+	void myInitCode();
+	void myRenderCode(double currentTime);
+	void myCleanupCode();
+	GLuint myRenderProgram;
+	GLuint myVAO;
+	glm::vec4 points[];
+}
 
 static int status = 1;
 static float fov, zoom;
@@ -166,4 +175,78 @@ void myCleanupCode()
 {
 	Box::cleanupCube();
 	Cube::cleanupCube();
+}
+
+namespace MyObject
+{
+	static const GLchar* vertex_shader_source[]=
+	{
+		""
+	};
+
+	static const GLchar* geom_shader_source[]=
+	{
+		""
+	};
+	static const GLchar* fragment_shader_source[] =
+	{
+		""
+	};
+
+	GLuint myShaderCompile()
+	{
+		GLuint vertex_shader;
+		GLuint geom_shader;
+		GLuint fragment_shader;
+		GLuint program;
+
+		vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertex_shader, 1, vertex_shader_source, NULL);
+		glCompileShader(vertex_shader);
+
+		geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(geom_shader, 1, geom_shader_source, NULL);
+		glCompileShader(geom_shader);
+
+		fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment_shader, 1, fragment_shader_source, NULL);
+		glCompileShader(fragment_shader);
+
+
+		program = glCreateProgram();
+		glAttachShader(program, vertex_shader);
+		glAttachShader(program, geom_shader);
+		glAttachShader(program, fragment_shader);
+		glLinkProgram(program);
+
+		glDeleteShader(vertex_shader);
+		glDeleteShader(geom_shader);
+		glDeleteShader(fragment_shader);
+
+		return program;
+	}
+
+	void myInitCode()
+	{
+		myRenderProgram = myShaderCompile();
+		glCreateVertexArrays(1, &myVAO);
+		glBindVertexArray(myVAO);
+
+		//Generar la semilla random
+	}
+
+	void myRenderCode(double currentTime)
+	{
+		glUseProgram(myRenderProgram);
+
+		//glm::mat4 matrix;
+		//glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "rotationMatrix"), 1, GL_FALSE, glm::value_ptr(matrix));
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+	}
+	
+	void myCleanupCode()
+	{
+		glDeleteVertexArrays(1, &myVAO);
+		glDeleteProgram(myRenderProgram);
+	}
 }

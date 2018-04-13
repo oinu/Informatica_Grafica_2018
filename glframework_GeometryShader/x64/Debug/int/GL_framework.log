@@ -1,10 +1,10 @@
 ﻿  my_render_code.cpp
-c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(279): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(282): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(287): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(292): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(308): warning C4305: '+=': truncation from 'double' to 'float'
-c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(316): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(80): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(83): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(88): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(93): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(197): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(424): warning C4305: '+=': truncation from 'double' to 'float'
   GL_framework.vcxproj -> C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_GeometryShader\x64\Debug\GL_framework.exe
   0 File(s) copied
   0 File(s) copied

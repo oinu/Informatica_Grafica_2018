@@ -170,7 +170,7 @@ void GLrender(double currentTime) {
 
 	ImGui::Render();
 
-	MyFirstShader::myRenderCode(currentTime);
+	//MyFirstShader::myRenderCode(currentTime);
 }
 
 

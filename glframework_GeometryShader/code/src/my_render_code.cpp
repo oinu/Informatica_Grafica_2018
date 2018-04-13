@@ -4,7 +4,9 @@
 #include <glm\gtc\matrix_transform.hpp>
 
 #include <cstdio>
+#include <time.h> 
 #include <cassert>
+#include <iostream>
 
 #include "GL_framework.h"
 
@@ -38,14 +40,14 @@ namespace RenderVars {
 	extern float rota[2];
 }
 namespace RV = RenderVars;
-namespace MyObject {
+namespace MyCube {
 	GLuint myShaderCompile();
 	void myInitCode();
 	void myRenderCode(double currentTime);
 	void myCleanupCode();
 	GLuint myRenderProgram;
 	GLuint myVAO;
-	glm::vec4 points[];
+	glm::vec4 points[4];
 }
 
 static int status = 1;
@@ -68,131 +70,173 @@ void GetStatus(int n)
 }
 void myInitCode()
 {
-	Box::setupCube();
-	Cube::setupCube();
+	MyCube::myInitCode();
 }
 
 void myRenderCode(double currentTime)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//The matrix i use for all the objects of the scene
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
-
-	//Cub1
-	glm::vec3 centerOfCube = glm::vec3(0.0f, 3.0f, 2.0f);
-	modelMatrix = glm::translate(modelMatrix, centerOfCube);
-	Cube::updateCube(modelMatrix);
-	Cube::drawCube();
-
-	//FIRST ROW
-	//Left Cube
-	modelMatrix = glm::mat4(1.0f);
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(-3.0f, 1.0f, 4.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//Center Cube
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(3.0f, 0.0f, 0.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//Right Cube
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(3.0f, 0.0f, 0.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//MIDDLE ROW
-	//Left Cube
-	modelMatrix = glm::mat4(1.0f);
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(-3.0f, 1.0f, 1.0f));
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(1.5f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//Center Cube
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//Right Cube
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//LAST ROW
-	//Left Cube
-	modelMatrix = glm::mat4(1.0f);
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 1.0f, -4.0f));
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//Center Cube
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//Right Cube
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
-	Cube::updateCube(modelMatrix);
-	Cube::draw2Cube();
-
-	//CAMERA
-	//HORIZONTAL TRAVELLING
-	if (status == 1)
-	{
-		static float x;
-		x += sinf((float)currentTime)*0.1;
-		RV::_modelView = glm::mat4(1.f);
-		RV::_modelView = glm::translate(RV::_modelView, glm::vec3(2.0f-x, -2.0f, -11.0f));
-		RV::_modelView = glm::rotate(RV::_modelView, glm::radians(20.f), glm::vec3(1.f, 0.f, 0.f));
-	}
-	
-
-	//THE DOLLY ZOOM
-	if (status == 3)
-	{
-		zoom = 0.0f + sinf((float)currentTime);
-	}
-	//OPEN/CLOSE FOV OR DOLLY ZOOM
-	if (status == 2 || status == 3)
-	{
-		fov = 65.0f + sinf((float)currentTime) * 6.2;
-
-		RV::_projection = glm::perspective(glm::radians(fov), 800.f / 600.f, 1.0f, 50.0f);
-
-		glm::vec3 cameraPos = glm::vec3(0.0f, 3.0f, 10.0f - zoom);
-		RV::_modelView = glm::lookAt(cameraPos,centerOfCube, glm::vec3(0.0f, 1.0f, 0.0f));
-	}
-	
-	RV::_MVP = RV::_projection * RV::_modelView;
-
-	Box::drawCube();
 	ImGui::Render();
+	MyCube::myRenderCode(currentTime);
 }
 void myCleanupCode()
 {
-	Box::cleanupCube();
-	Cube::cleanupCube();
+	MyCube::myCleanupCode();
 }
 
-namespace MyObject
-{
-	static const GLchar* vertex_shader_source[]=
+namespace MyCube
+{//1. define the shader source code
+	static const GLchar* vertex_shade_source[] =
 	{
-		""
+		"#version 330														\n\
+																			\n\
+		void main() {\n\
+		 gl_Position =vec4(0.0);						\n\
+		}"
 	};
 
-	static const GLchar* geom_shader_source[]=
+	static const GLchar* geom_shader_source[] =
 	{
-		""
-	};
-	static const GLchar* fragment_shader_source[] =
-	{
-		""
+		"#version 330												\n\
+				layout(triangles) in;									\n\
+				uniform mat4 rotationMatrix;								\n\
+				uniform vec4 cube0;\n\
+				uniform vec4 cube1;\n\
+				uniform vec4 cube2;\n\
+				uniform vec4 cube3;\n\
+				layout(triangle_strip, max_vertices = 96) out;			\n\
+																		\n\
+				void Cube(vec4 position)												\n\
+				{														\n\
+					vec4 cara1[4] = vec4[4]							\n\
+						(vec4(0.5, -0.5, 0.5, 1.0),			\n\
+						vec4(0.5, 0.5, 0.5, 1.0),			\n\
+						vec4(-0.5,-0.5, 0.5, 1.0),			\n\
+						vec4(-0.5, 0.5, 0.5, 1.0));			\n\
+															\n\
+															\n\
+					vec4 cara2[4] = vec4[4]							\n\
+						(vec4(-0.5, -0.5, 0.5, 1.0),			\n\
+						vec4(-0.5, 0.5, 0.5, 1.0),			\n\
+						vec4(-0.5,-0.5, -0.5, 1.0),			\n\
+						vec4(-0.5, 0.5, -0.5, 1.0));			\n\
+															\n\
+															\n\
+					vec4 cara3[4] = vec4[4]							\n\
+						(vec4(-0.5, -0.5, -0.5, 1.0),			\n\
+						vec4(-0.5, 0.5, -0.5, 1.0),			\n\
+						vec4(0.5,-0.5, -0.5, 1.0),			\n\
+						vec4(0.5, 0.5, -0.5, 1.0));			\n\
+															\n\
+															\n\
+					vec4 cara4[4] = vec4[4]							\n\
+						(vec4(0.5, -0.5, -0.5, 1.0),			\n\
+						vec4(0.5, 0.5, -0.5, 1.0),			\n\
+						vec4(0.5,-0.5, 0.5, 1.0),			\n\
+						vec4(0.5, 0.5, 0.5, 1.0));			\n\
+															\n\
+															\n\
+					vec4 cara5[4] = vec4[4]							\n\
+						(vec4(0.5, 0.5, 0.5, 1.0),			\n\
+						vec4(0.5, 0.5, -0.5, 1.0),			\n\
+						vec4(-0.5,0.5, 0.5, 1.0),			\n\
+						vec4(-0.5, 0.5, -0.5, 1.0));			\n\
+															\n\
+															\n\
+					vec4 cara6[4] = vec4[4]							\n\
+						(vec4(0.5, -0.5, -0.5, 1.0),			\n\
+						vec4(0.5, -0.5, 0.5, 1.0),			\n\
+						vec4(-0.5,-0.5, -0.5, 1.0),			\n\
+						vec4(-0.5, -0.5, 0.5, 1.0));			\n\
+															\n\
+															\n\
+								                              \n\
+						for (int j = 0; j < 4;j++)				\n\
+						{										\n\
+						gl_Position = cara1[j] * rotationMatrix + position;		\n\
+						gl_PrimitiveID=0;								\n\
+						EmitVertex();									\n\
+						}												\n\
+						EndPrimitive();									\n\
+																		\n\
+																		\n\
+						for (int j = 0; j < 4;j++)				\n\
+						{										\n\
+						gl_Position = cara2[j] * rotationMatrix+ position;		\n\
+						gl_PrimitiveID=1;								\n\
+						EmitVertex();									\n\
+						}												\n\
+						EndPrimitive();									\n\
+																		\n\
+																		\n\
+						for (int j = 0; j < 4;j++)				\n\
+						{										\n\
+						gl_Position = cara3[j] * rotationMatrix+ position;		\n\
+						gl_PrimitiveID=2;								\n\
+						EmitVertex();									\n\
+						}												\n\
+						EndPrimitive();									\n\
+																		\n\
+																		\n\
+						for (int j = 0; j < 4;j++)				\n\
+						{										\n\
+						gl_Position = cara4[j] * rotationMatrix+ position;		\n\
+						gl_PrimitiveID=3;								\n\
+						EmitVertex();									\n\
+						}												\n\
+						EndPrimitive();									\n\
+																		\n\
+																		\n\
+						for (int j = 0; j < 4;j++)				\n\
+						{										\n\
+						gl_Position = cara5[j] * rotationMatrix+ position;		\n\
+						gl_PrimitiveID=4;								\n\
+						EmitVertex();									\n\
+						}												\n\
+						EndPrimitive();									\n\
+																		\n\
+																		\n\
+						for (int j = 0; j < 4;j++)				\n\
+						{										\n\
+						gl_Position = cara6[j] * rotationMatrix+ position;		\n\
+						gl_PrimitiveID=5;								\n\
+						EmitVertex();									\n\
+						}												\n\
+						EndPrimitive();									\n\
+																		\n\
+																		\n\
+																		\n\
+			}\n\
+																		\n\
+																		\n\
+			void main(){												\n\
+			Cube(cube0);												\n\
+			Cube(cube1);												\n\
+			Cube(cube2);												\n\
+			Cube(cube3);												\n\
+			}															\n\
+			"
 	};
 
+	static const GLchar* fragment_shade_source[] =
+	{
+		"#version 330																	\n\
+			out vec4 color;\n\
+			void main() {																	\n\
+				const vec4 colors[8] = vec4[8](vec4(0, 1, 0, 1.0),							\n\
+										       vec4(0.25, 0.25, 0.5, 1.0),					\n\
+										       vec4(1, 0.25, 0.5, 1.0),						\n\
+										       vec4(0.25, 0, 0, 1.0),						\n\
+										       vec4(1, 0, 0, 1.0),							\n\
+										       vec4(0.5, 0, 0.5, 1.0),						\n\
+											   vec4(0, 0, 1, 1.0),							\n\
+											   vec4(0, 0.25, 0, 1.0));						\n\
+				color = colors[gl_PrimitiveID];												\n\
+			}"
+	};
+
+	//2. compile and link the shaders
 	GLuint myShaderCompile()
 	{
 		GLuint vertex_shader;
@@ -201,7 +245,7 @@ namespace MyObject
 		GLuint program;
 
 		vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertex_shader, 1, vertex_shader_source, NULL);
+		glShaderSource(vertex_shader, 1, vertex_shade_source, NULL);
 		glCompileShader(vertex_shader);
 
 		geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
@@ -209,7 +253,7 @@ namespace MyObject
 		glCompileShader(geom_shader);
 
 		fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragment_shader, 1, fragment_shader_source, NULL);
+		glShaderSource(fragment_shader, 1, fragment_shade_source, NULL);
 		glCompileShader(fragment_shader);
 
 
@@ -226,24 +270,67 @@ namespace MyObject
 		return program;
 	}
 
+	//3. init function
 	void myInitCode()
 	{
 		myRenderProgram = myShaderCompile();
 		glCreateVertexArrays(1, &myVAO);
 		glBindVertexArray(myVAO);
+		srand(time(NULL));
+		for (int i = 0; i < 4; i++)
+		{
+			float x = rand()%10;
+			int n = rand();
+			if (n % 2 == 0)x = -x;
+			x /= 10;
 
-		//Generar la semilla random
+			float y = rand() % 10;
+			n = rand();
+			if (n % 2 == 0)y = -y;
+			y /= 10;
+
+			float z = rand() % 10;
+			n = rand();
+			if (n % 2 == 0)z = -z;
+			z /= 10;
+
+			points[i] = glm::vec4(x,y,z,1.0f);
+		}
+			
 	}
 
+	//4. render function
+	static float rot;
+	glm::mat4 myMVP;
 	void myRenderCode(double currentTime)
 	{
+		glm::mat4 matrix;
+		rot += 0.01;
+		if (rot >= 360.0f)
+		{
+			rot = 0.0f;
+		}
+
+		matrix = glm::rotate(matrix, rot, glm::vec3(0.0f, 1.0f, 0.0f));
+		matrix = glm::rotate(matrix, RV::panv[1]+4.5f, glm::vec3(1.0f, 0.0f, 0.0f));
+		matrix = glm::scale(matrix, glm::vec3(0.1));
 		glUseProgram(myRenderProgram);
 
-		//glm::mat4 matrix;
-		//glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "rotationMatrix"), 1, GL_FALSE, glm::value_ptr(matrix));
+		glUniform4f(glGetUniformLocation(myRenderProgram, "cube0"), points[0].x, points[0].y, points[0].z, points[0].w);
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "rotationMatrix"), 1, GL_FALSE, glm::value_ptr(matrix));
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glUniform4f(glGetUniformLocation(myRenderProgram, "cube1"), points[1].x, points[1].y, points[1].z, points[1].w);
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "rotationMatrix"), 1, GL_FALSE, glm::value_ptr(matrix));
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glUniform4f(glGetUniformLocation(myRenderProgram, "cube2"), points[2].x, points[2].y, points[2].z, points[2].w);
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "rotationMatrix"), 1, GL_FALSE, glm::value_ptr(matrix));
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glUniform4f(glGetUniformLocation(myRenderProgram, "cube3"), points[3].x, points[3].y, points[3].z, points[3].w);
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "rotationMatrix"), 1, GL_FALSE, glm::value_ptr(matrix));
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
-	
+
+	//5. cleanup function
 	void myCleanupCode()
 	{
 		glDeleteVertexArrays(1, &myVAO);

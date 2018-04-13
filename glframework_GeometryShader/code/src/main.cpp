@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 	//PhysicsInit();
 
 	//S'HA DE CREAR EN EL MY_RENDER_CODE
-	//myInitCode();
+	myInitCode();
 
 	
 	// Setup ImGui binding
@@ -154,12 +154,12 @@ int main(int argc, char** argv) {
 		}
 
 
-		double currentTime = (double)SDL_GetTicks() / 1000.0;
-		GLrender(currentTime);
+		//double currentTime = (double)SDL_GetTicks() / 1000.0;
+		//GLrender(currentTime);
 		
 		//S'HA DE CREAR EN EL MY_RENDER_CODE
-		//double currentTime = (double) SDL_GetTicks() / 1000.0;
-		//myRenderCode(currentTime);
+		double currentTime = (double) SDL_GetTicks() / 1000.0;
+		myRenderCode(currentTime);
 		
 
 
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
 	}
 
 	//S'HA DE CREAR EN EL MY_RENDER_CODE
-	//myCleanupCode();
+	myCleanupCode();
 
 	GLcleanup();
 

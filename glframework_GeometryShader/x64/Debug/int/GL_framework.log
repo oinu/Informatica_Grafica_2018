@@ -1,13 +1,10 @@
-﻿  main.cpp
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  render_prims.cpp
-  physics.cpp
-  my_render_code.cpp
-  imgui_impl_sdl_gl3.cpp
-  imgui_draw.cpp
-  imgui_demo.cpp
-  imgui.cpp
-  GL_framework.vcxproj -> C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_starthere\x64\Debug\GL_framework.exe
+﻿  my_render_code.cpp
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(279): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(282): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(287): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(292): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(308): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\glframework_geometryshader\code\src\my_render_code.cpp(316): warning C4305: 'argument': truncation from 'double' to 'float'
+  GL_framework.vcxproj -> C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_GeometryShader\x64\Debug\GL_framework.exe
   0 File(s) copied
   0 File(s) copied

@@ -118,7 +118,7 @@ void GLinit(int width, int height) {
 	Axis::setupAxis();
 
 	Cube::setupCube();*/
-	MyFirstShader::myInitCode();
+	//MyFirstShader::myInitCode();
 
 }
 
@@ -1056,14 +1056,14 @@ namespace MyFirstShader {
 																		\n\
 				void main()												\n\
 				{														\n\
-					vec4 vertices[4] = vec4[4]							\n\
+					vec4 cara1[4] = vec4[4]							\n\
 						(vec4(0.5, -0.5, 0, 1.0),			\n\
 						vec4(0.5, 0.5, 0, 1.0),			\n\
 						vec4(-0.5,-0.5, 0, 1.0),			\n\
 						vec4(-0.5, 0.5, 0, 1.0));			\n\
 					for (int i = 0; i < 4; i++)							\n\
 					{													\n\
-						gl_Position = vertices[i] * rotationMatrix;		\n\
+						gl_Position = cara1[i] * rotationMatrix;		\n\
 						EmitVertex();									\n\
 					}													\n\
 					EndPrimitive();								}"

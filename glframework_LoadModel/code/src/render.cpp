@@ -36,6 +36,15 @@ namespace Cube {
 	void drawCube();
 }
 
+namespace ModelShader {
+	GLuint myShaderCompile();
+	void myInitCode();
+	void myRenderCode(double currentTime);
+	void myCleanupCode();
+	GLuint myRenderProgram;
+	GLuint myVAO;
+	GLuint objVBO[2];
+}
 
 
 
@@ -110,16 +119,17 @@ void GLinit(int width, int height) {
 	// Setup shaders & geometry
 	Box::setupCube();
 	Axis::setupAxis();
-	Cube::setupCube();
+	//Cube::setupCube();
 	loadOBJ("Cube.obj",vertices, uvs, normals);
+	ModelShader::myInitCode();
 
 }
 
 void GLcleanup() {
 	Box::cleanupCube();
 	Axis::cleanupAxis();
-	Cube::cleanupCube();
-
+	//Cube::cleanupCube();
+	ModelShader::myCleanupCode();
 
 }
 
@@ -136,7 +146,8 @@ void GLrender(double currentTime) {
 	// render code
 	Box::drawCube();
 	Axis::drawAxis();
-	Cube::drawCube();
+	//Cube::drawCube();
+	ModelShader::myRenderCode(currentTime);
 
 
 
@@ -986,4 +997,104 @@ void main() {\n\
 	}
 
 
+}
+
+
+namespace ModelShader {
+	//1. define the shader source code
+	static const GLchar* vertex_shade_source[] =
+	{
+		"#version 330\n\
+in vec3 in_Position;\n\
+in vec3 in_Normal;\n\
+out vec4 vert_Normal;\n\
+uniform mat4 objMat;\n\
+uniform mat4 mv_Mat;\n\
+uniform mat4 mvpMat;\n\
+void main() {\n\
+gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
+vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
+}"
+	};
+
+	static const GLchar* fragment_shade_source[] =
+	{
+		"#version 330\n\
+in vec4 vert_Normal;\n\
+out vec4 out_Color;\n\
+uniform mat4 mv_Mat;\n\
+uniform vec4 color;\n\
+void main() {\n\
+out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(0.0, 1.0, 0.0, 0.0))+ color.xyz * 0.3, 1.0 ); }"
+	};
+
+	//2. compile and link the shaders
+	GLuint myShaderCompile()
+	{
+		GLuint vertex_shader;
+		GLuint fragment_shader;
+		GLuint program;
+
+		vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertex_shader, 1, vertex_shade_source, NULL);
+		glCompileShader(vertex_shader);
+
+		fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment_shader, 1, fragment_shade_source, NULL);
+		glCompileShader(fragment_shader);
+
+		program = glCreateProgram();
+		glAttachShader(program, vertex_shader);
+		glAttachShader(program, fragment_shader);
+		glLinkProgram(program);
+
+		glDeleteShader(vertex_shader);
+		glDeleteShader(fragment_shader);
+
+		return program;
+	}
+
+	//3. init function
+	void myInitCode()
+	{
+		myRenderProgram = myShaderCompile();
+		glGenVertexArrays(1, &myVAO);
+		glGenBuffers(2, objVBO);
+		glBindVertexArray(myVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, objVBO[0]);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+				glBindBuffer(GL_ARRAY_BUFFER, objVBO[1]);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+
+		/*glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);*/		glBindAttribLocation(myRenderProgram, 0, "in_Position");		glBindAttribLocation(myRenderProgram, 1, "in_Normal");
+		glLinkProgram(myRenderProgram);
+	}
+
+	//4. render function
+	static float rot;
+	void myRenderCode(double currentTime)
+	{
+		glBindVertexArray(myVAO);
+		glUseProgram(myRenderProgram);
+		glm::mat4 matrix = glm::mat4(1.0);
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(matrix));
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RV::_modelView));
+		glUniformMatrix4fv(glGetUniformLocation(myRenderProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RV::_MVP));
+		glUniform4f(glGetUniformLocation(myRenderProgram, "color"), 0.1f, 1.f, 1.f, 0.f);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+	}
+
+	//5. cleanup function
+	void myCleanupCode()
+	{
+		glDeleteVertexArrays(1, &myVAO);
+		glDeleteProgram(myRenderProgram);
+	}
 }

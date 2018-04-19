@@ -12,11 +12,7 @@
 std::vector<glm::vec3>vertices;
 std::vector<glm::vec2>uvs;
 std::vector<glm::vec3>normals;
-std::vector< unsigned int >vertexInd;
-std::vector< unsigned int >uvInd;
-std::vector< unsigned int >normalInd;
-extern bool loadOBJ(const char* path, std::vector<glm::vec3>&out_vertices, std::vector<glm::vec2>&out_uvs, std::vector<glm::vec3>&out_normals,
-	std::vector< unsigned int > &vertexIndices, std::vector< unsigned int > &uvIndices, std::vector< unsigned int > &normalIndices);
+extern bool loadOBJ(const char* path, std::vector<glm::vec3>&out_vertices, std::vector<glm::vec2>&out_uvs, std::vector<glm::vec3>&out_normals);
 
 ///////// fw decl
 namespace ImGui {
@@ -115,16 +111,7 @@ void GLinit(int width, int height) {
 	Box::setupCube();
 	Axis::setupAxis();
 	Cube::setupCube();
-	loadOBJ("Cube.obj",vertices, uvs, normals,vertexInd,uvInd,normalInd);
-
-
-
-
-
-
-
-
-
+	loadOBJ("Cube.obj",vertices, uvs, normals);
 
 }
 

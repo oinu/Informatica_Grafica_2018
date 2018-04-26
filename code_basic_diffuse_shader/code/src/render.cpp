@@ -79,6 +79,12 @@ namespace MyLoadedModel {
 	void updateModel(const glm::mat4& transform);
 	void drawModel();
 }
+namespace Cabin {
+	void setupModel();
+	void cleanupModel();
+	void updateModel(const glm::mat4& transform);
+	void drawModel();
+}
 
 namespace Sphere {
 	void setupSphere(glm::vec3 pos, float radius);
@@ -155,9 +161,19 @@ void GLinit(int width, int height) {
 
 	RV::_projection = glm::perspective(RV::FOV, (float)width/(float)height, RV::zNear, RV::zFar);
 
+	//Load Trump
 	bool res = loadOBJ("farola.obj", vertices, uvs, normals);
-
 	MyLoadedModel::setupModel();
+	vertices.clear();
+	uvs.clear();
+	normals.clear();
+
+	//Load Cabin
+	res = loadOBJ("test_cabin_v3.obj", vertices, uvs, normals);
+	Cabin::setupModel();
+	vertices.clear();
+	uvs.clear();
+	normals.clear();
 
 	lightPos =  glm::vec3(40, 40, 0);
 
@@ -172,6 +188,7 @@ void GLinit(int width, int height) {
 
 void GLcleanup() {
 	MyLoadedModel::cleanupModel();
+	Cabin::cleanupModel();
 	Sphere::cleanupSphere();
 
 
@@ -193,6 +210,12 @@ void GLrender(double currentTime) {
 	Sphere::updateSphere(lightPos, 1.0f);
 	Sphere::drawSphere();
 	MyLoadedModel::drawModel();
+
+	glm::mat4 model;
+	model = glm::translate(model,glm::vec3(glm::vec3(10*sin((float)currentTime),10*cos((float)currentTime), 0)));
+	model = glm::scale(model, glm::vec3(0.01f));
+	Cabin::updateModel(model);
+	Cabin::drawModel();
 
 	
 
@@ -928,7 +951,7 @@ out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
 void main() {\n\
-    float difuse = dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
+    float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
 	\n\
 	//Toon Shading\n\
 	//if(difuse<0.2)difuse=0.0;\n\
@@ -992,6 +1015,115 @@ void main() {\n\
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
 		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
 	
+		glDrawArrays(GL_TRIANGLES, 0, 10000);
+
+
+		glUseProgram(0);
+		glBindVertexArray(0);
+
+	}
+
+
+}
+
+namespace Cabin {
+	GLuint modelVao;
+	GLuint modelVbo[3];
+	GLuint modelShaders[2];
+	GLuint modelProgram;
+	glm::mat4 objMat = glm::mat4(1.f);
+
+
+
+	const char* model_vertShader =
+		"#version 330\n\
+	in vec3 in_Position;\n\
+	in vec3 in_Normal;\n\
+	uniform vec3 lPos;\n\
+	out vec3 lDir;\n\
+	out vec4 vert_Normal;\n\
+	uniform mat4 objMat;\n\
+	uniform mat4 mv_Mat;\n\
+	uniform mat4 mvpMat;\n\
+	void main() {\n\
+		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
+		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
+		lDir = normalize(lPos - gl_Position.xyz );\n\
+	}";
+
+
+	const char* model_fragShader =
+		"#version 330\n\
+in vec4 vert_Normal;\n\
+in vec3 lDir;\n\
+out vec4 out_Color;\n\
+uniform mat4 mv_Mat;\n\
+uniform vec4 color;\n\
+void main() {\n\
+    float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
+	\n\
+	//Toon Shading\n\
+	//if(difuse<0.2)difuse=0.0;\n\
+	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
+	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
+	//else difuse=1.0;\n\
+	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+}";
+	void setupModel() {
+		glGenVertexArrays(1, &modelVao);
+		glBindVertexArray(modelVao);
+		glGenBuffers(3, modelVbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[0]);
+
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[1]);
+
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+
+
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		modelShaders[0] = compileShader(model_vertShader, GL_VERTEX_SHADER, "cubeVert");
+		modelShaders[1] = compileShader(model_fragShader, GL_FRAGMENT_SHADER, "cubeFrag");
+
+		modelProgram = glCreateProgram();
+		glAttachShader(modelProgram, modelShaders[0]);
+		glAttachShader(modelProgram, modelShaders[1]);
+		glBindAttribLocation(modelProgram, 0, "in_Position");
+		glBindAttribLocation(modelProgram, 1, "in_Normal");
+		linkProgram(modelProgram);
+	}
+	void cleanupModel() {
+
+		glDeleteBuffers(2, modelVbo);
+		glDeleteVertexArrays(1, &modelVao);
+
+		glDeleteProgram(modelProgram);
+		glDeleteShader(modelShaders[0]);
+		glDeleteShader(modelShaders[1]);
+	}
+	void updateModel(const glm::mat4& transform) {
+		objMat = transform;
+	}
+	void drawModel() {
+
+		glBindVertexArray(modelVao);
+		glUseProgram(modelProgram);
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
+		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+
 		glDrawArrays(GL_TRIANGLES, 0, 10000);
 
 

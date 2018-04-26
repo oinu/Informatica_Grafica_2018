@@ -57,10 +57,14 @@ void GUI() {
 	}
 }
 
-int status=2;
-void ChangeStatus(int id)
+int status=1;
+void SetStatus(int id)
 {
 	status = id;
+}
+int GetStatus()
+{
+	return status;
 }
 
 ///////// fw decl
@@ -173,6 +177,12 @@ void GLinit(int width, int height) {
 	uvs.clear();
 	normals.clear();
 
+	res = loadOBJ("cube.obj", vertices, uvs, normals);
+	MyLoadedModel::setupModel();
+	vertices.clear();
+	uvs.clear();
+	normals.clear();
+
 	lightPos =  glm::vec3(40, 40, 0);
 
 	Sphere::setupSphere(lightPos, 1.0f);
@@ -186,6 +196,7 @@ void GLinit(int width, int height) {
 
 void GLcleanup() {
 	Cabin::cleanupModel();
+	MyLoadedModel::cleanupModel();
 	Sphere::cleanupSphere();
 
 
@@ -211,12 +222,24 @@ void GLrender(double currentTime) {
 
 	//Center of Scene
 	glm::vec3 centerScene = glm::vec3(0.0f, 20, 0.0f);
-	Sphere::updateSphere(centerScene, 1.0f);
+	Sphere::updateSphere(lightPos, 1.0f);
 	Sphere::drawSphere();
 
 	//Cabins
 	glm::mat4 model;
-	if (status == 2)
+	if (status == 1)
+	{
+		for (int i = 0; i < 14; i++)
+		{
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime + distanceCabin*i)), distanceCenter *sin((float)currentTime + distanceCabin*i), 0)));
+			model = glm::scale(model, glm::vec3(2.0f));
+			MyLoadedModel::updateModel(model);
+			MyLoadedModel::drawModel();
+		}
+	}
+	else if (status == 2)
 	{
 		for (int i = 0; i < 14; i++)
 		{

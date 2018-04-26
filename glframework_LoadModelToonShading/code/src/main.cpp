@@ -18,6 +18,8 @@ extern void GLResize(int width, int height);
 extern void GLinit(int width, int height);
 extern void GLcleanup();
 extern void GLrender(double currentTime);
+extern void SetStatus(int id);
+extern int GetStatus();
 
 
 extern void myRenderCode(double currentTime);
@@ -112,7 +114,10 @@ int main(int argc, char** argv) {
 			case SDL_KEYDOWN:
 				if (eve.key.keysym.sym == SDLK_a)
 				{
-					
+					int id = GetStatus();
+					if (id == 2)
+						id = 0;
+					SetStatus(id += 1);
 				}
 				break;
 			case SDL_QUIT:

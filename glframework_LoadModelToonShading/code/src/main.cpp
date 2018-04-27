@@ -18,8 +18,10 @@ extern void GLResize(int width, int height);
 extern void GLinit(int width, int height);
 extern void GLcleanup();
 extern void GLrender(double currentTime);
-extern void SetStatus(int id);
-extern int GetStatus();
+extern void SetExercise(int id);
+extern int GetExercise();
+extern void SetModelActivated(bool e);
+extern bool GetModelActivated();
 
 
 extern void myRenderCode(double currentTime);
@@ -114,10 +116,20 @@ int main(int argc, char** argv) {
 			case SDL_KEYDOWN:
 				if (eve.key.keysym.sym == SDLK_a)
 				{
-					int id = GetStatus();
+					int id = GetExercise();
+					//Max Exercises
 					if (id == 2)
-						id = 0;
-					SetStatus(id += 1);
+						id = 1;
+					else id++;
+
+					if (id == 1) SetModelActivated(false);
+					else if (id == 2)SetModelActivated(true);
+
+					SetExercise(id);
+				}
+				if (eve.key.keysym.sym == SDLK_m)
+				{
+					SetModelActivated(!GetModelActivated());
 				}
 				break;
 			case SDL_QUIT:

@@ -58,8 +58,9 @@ void GUI() {
 }
 
 
-float distanceCenter = 20;
-float distanceCabin = 0.45;
+float distanceCenter = 25;
+float distanceCabin = (2*3.1415)/20;
+float speedMultiplayer = 0.5;
 glm::vec3 centerScene = glm::vec3(0.0f, 20, 0.0f);
 
 //Exercise variables
@@ -96,13 +97,28 @@ namespace Cube {
 	void updateModel(const glm::mat4& transform);
 	void drawModel();
 }
-namespace Torus {
+namespace Cabin {
 	void setupModel();
 	void cleanupModel();
 	void updateModel(const glm::mat4& transform);
 	void drawModel();
 }
-namespace Cabin {
+
+namespace Trump {
+	void setupModel();
+	void cleanupModel();
+	void updateModel(const glm::mat4& transform);
+	void drawModel();
+}
+
+namespace Chicken {
+	void setupModel();
+	void cleanupModel();
+	void updateModel(const glm::mat4& transform);
+	void drawModel();
+}
+
+namespace Wheel {
 	void setupModel();
 	void cleanupModel();
 	void updateModel(const glm::mat4& transform);
@@ -191,9 +207,23 @@ void GLinit(int width, int height) {
 	uvs.clear();
 	normals.clear();
 
-	//Load Torus
-	res = loadOBJ("torus.obj", vertices, uvs, normals);
-	Torus::setupModel();
+	//Load Trump
+	res = loadOBJ("trump.obj", vertices, uvs, normals);
+	Trump::setupModel();
+	vertices.clear();
+	uvs.clear();
+	normals.clear();
+
+	//Load Chicken
+	res = loadOBJ("chicken.obj", vertices, uvs, normals);
+	Chicken::setupModel();
+	vertices.clear();
+	uvs.clear();
+	normals.clear();
+
+	//Load Wheel
+	res = loadOBJ("wheel.obj", vertices, uvs, normals);
+	Wheel::setupModel();
 	vertices.clear();
 	uvs.clear();
 	normals.clear();
@@ -212,7 +242,9 @@ void GLinit(int width, int height) {
 
 void GLcleanup() {
 	Cube::cleanupModel();
-	Torus::cleanupModel();
+	Trump::cleanupModel();
+	Chicken::cleanupModel();
+	Wheel::cleanupModel();
 	Cabin::cleanupModel();
 	Sphere::cleanupSphere();
 }
@@ -242,12 +274,6 @@ void GLrender(double currentTime) {
 	{
 		if (!modelActivated)
 		{
-			//Torus
-			model = glm::translate(model, centerScene);
-			model = glm::scale(model, glm::vec3(0.3f));
-			Torus::updateModel(model);
-			Torus::drawModel();
-
 			//Cube Trump
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
@@ -265,7 +291,7 @@ void GLrender(double currentTime) {
 			Cube::drawModel();
 
 			//Cube Cabins
-			for (int i = 0; i < 14; i++)
+			for (int i = 0; i < 20; i++)
 			{
 				model = glm::mat4(1.0);
 				model = glm::translate(model, centerScene);
@@ -277,12 +303,38 @@ void GLrender(double currentTime) {
 		}
 		else
 		{
-			for (int i = 0; i < 14; i++)
+			//Trump
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime + distanceCabin) - 4, 1)));
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.03f));
+			Trump::updateModel(model);
+			Trump::drawModel();
+
+			//Chicken
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) - 1, distanceCenter *sin((float)currentTime + distanceCabin) - 3, +1)));
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.04f));
+			Chicken::updateModel(model);
+			Chicken::drawModel();
+
+			//Wheel
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::rotate(model, (float)currentTime, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(0.004f));
+			Wheel::updateModel(model);
+			Wheel::drawModel();
+
+			for (int i = 0; i < 20; i++)
 			{
 				model = glm::mat4(1.0);
 				model = glm::translate(model, centerScene);
 				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime + distanceCabin*i)), distanceCenter *sin((float)currentTime + distanceCabin*i), 0)));
-				model = glm::scale(model, glm::vec3(0.01f));
+				model = glm::scale(model, glm::vec3(0.005f));
 				Cabin::updateModel(model);
 				Cabin::drawModel();
 			}
@@ -292,12 +344,6 @@ void GLrender(double currentTime) {
 	{
 		if (!modelActivated)
 		{
-			//Torus
-			model = glm::translate(model, centerScene);
-			model = glm::scale(model, glm::vec3(0.3f));
-			Torus::updateModel(model);
-			Torus::drawModel();
-
 			//Cube Trump
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
@@ -315,7 +361,7 @@ void GLrender(double currentTime) {
 			Cube::drawModel();
 
 			//Cube Cabins
-			for (int i = 0; i < 14; i++)
+			for (int i = 0; i < 20; i++)
 			{
 				model = glm::mat4(1.0);
 				model = glm::translate(model, centerScene);
@@ -327,12 +373,38 @@ void GLrender(double currentTime) {
 		}
 		else
 		{
-			for (int i = 0; i < 14; i++)
+			//Trump
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime + distanceCabin)-3, -1)));
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.02f));
+			Trump::updateModel(model);
+			Trump::drawModel();
+
+			//Chicken
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) -3, -1)));
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.04f));
+			Chicken::updateModel(model);
+			Chicken::drawModel();
+
+			//Wheel
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::rotate(model, (float)currentTime*speedMultiplayer, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(0.004f));
+			Wheel::updateModel(model);
+			Wheel::drawModel();
+
+			for (int i = 0; i < 20; i++)
 			{
 				model = glm::mat4(1.0);
 				model = glm::translate(model, centerScene);
-				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime + distanceCabin*i)), distanceCenter *sin((float)currentTime + distanceCabin*i), 0)));
-				model = glm::scale(model, glm::vec3(0.01f));
+				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime*speedMultiplayer + distanceCabin*i)), distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin*i), 0)));
+				model = glm::scale(model, glm::vec3(0.005f));
 				Cabin::updateModel(model);
 				Cabin::drawModel();
 			}
@@ -617,8 +689,8 @@ void main() {\n\
 
 
 }
-////////////// Torus /////////////////////
-namespace Torus {
+////////////// Cabin /////////////////////
+namespace Cabin {
 	GLuint modelVao;
 	GLuint modelVbo[3];
 	GLuint modelShaders[2];
@@ -726,8 +798,8 @@ void main() {\n\
 
 
 }
-////////////// Cabin /////////////////////
-namespace Cabin {
+////////////// Trump /////////////////////
+namespace Trump {
 	GLuint modelVao;
 	GLuint modelVbo[3];
 	GLuint modelShaders[2];
@@ -826,6 +898,224 @@ void main() {\n\
 		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 10000);
+
+
+		glUseProgram(0);
+		glBindVertexArray(0);
+
+	}
+
+
+}
+////////////// Chicken /////////////////////
+namespace Chicken {
+	GLuint modelVao;
+	GLuint modelVbo[3];
+	GLuint modelShaders[2];
+	GLuint modelProgram;
+	glm::mat4 objMat = glm::mat4(1.f);
+
+
+
+	const char* model_vertShader =
+		"#version 330\n\
+	in vec3 in_Position;\n\
+	in vec3 in_Normal;\n\
+	uniform vec3 lPos;\n\
+	out vec3 lDir;\n\
+	out vec4 vert_Normal;\n\
+	uniform mat4 objMat;\n\
+	uniform mat4 mv_Mat;\n\
+	uniform mat4 mvpMat;\n\
+	void main() {\n\
+		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
+		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
+		lDir = normalize(lPos - gl_Position.xyz );\n\
+	}";
+
+
+	const char* model_fragShader =
+		"#version 330\n\
+in vec4 vert_Normal;\n\
+in vec3 lDir;\n\
+out vec4 out_Color;\n\
+uniform mat4 mv_Mat;\n\
+uniform vec4 color;\n\
+void main() {\n\
+    float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
+	\n\
+	//Toon Shading\n\
+	//if(difuse<0.2)difuse=0.0;\n\
+	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
+	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
+	//else difuse=1.0;\n\
+	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+}";
+	void setupModel() {
+		glGenVertexArrays(1, &modelVao);
+		glBindVertexArray(modelVao);
+		glGenBuffers(3, modelVbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[0]);
+
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[1]);
+
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+
+
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		modelShaders[0] = compileShader(model_vertShader, GL_VERTEX_SHADER, "cubeVert");
+		modelShaders[1] = compileShader(model_fragShader, GL_FRAGMENT_SHADER, "cubeFrag");
+
+		modelProgram = glCreateProgram();
+		glAttachShader(modelProgram, modelShaders[0]);
+		glAttachShader(modelProgram, modelShaders[1]);
+		glBindAttribLocation(modelProgram, 0, "in_Position");
+		glBindAttribLocation(modelProgram, 1, "in_Normal");
+		linkProgram(modelProgram);
+	}
+	void cleanupModel() {
+
+		glDeleteBuffers(2, modelVbo);
+		glDeleteVertexArrays(1, &modelVao);
+
+		glDeleteProgram(modelProgram);
+		glDeleteShader(modelShaders[0]);
+		glDeleteShader(modelShaders[1]);
+	}
+	void updateModel(const glm::mat4& transform) {
+		objMat = transform;
+	}
+	void drawModel() {
+
+		glBindVertexArray(modelVao);
+		glUseProgram(modelProgram);
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
+		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+
+		glDrawArrays(GL_TRIANGLES, 0, 100000);
+
+
+		glUseProgram(0);
+		glBindVertexArray(0);
+
+	}
+
+
+}
+////////////// Wheel /////////////////////
+namespace Wheel {
+	GLuint modelVao;
+	GLuint modelVbo[3];
+	GLuint modelShaders[2];
+	GLuint modelProgram;
+	glm::mat4 objMat = glm::mat4(1.f);
+
+
+
+	const char* model_vertShader =
+		"#version 330\n\
+	in vec3 in_Position;\n\
+	in vec3 in_Normal;\n\
+	uniform vec3 lPos;\n\
+	out vec3 lDir;\n\
+	out vec4 vert_Normal;\n\
+	uniform mat4 objMat;\n\
+	uniform mat4 mv_Mat;\n\
+	uniform mat4 mvpMat;\n\
+	void main() {\n\
+		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
+		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
+		lDir = normalize(lPos - gl_Position.xyz );\n\
+	}";
+
+
+	const char* model_fragShader =
+		"#version 330\n\
+in vec4 vert_Normal;\n\
+in vec3 lDir;\n\
+out vec4 out_Color;\n\
+uniform mat4 mv_Mat;\n\
+uniform vec4 color;\n\
+void main() {\n\
+    float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
+	\n\
+	//Toon Shading\n\
+	//if(difuse<0.2)difuse=0.0;\n\
+	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
+	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
+	//else difuse=1.0;\n\
+	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+}";
+	void setupModel() {
+		glGenVertexArrays(1, &modelVao);
+		glBindVertexArray(modelVao);
+		glGenBuffers(3, modelVbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[0]);
+
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[1]);
+
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+
+
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		modelShaders[0] = compileShader(model_vertShader, GL_VERTEX_SHADER, "cubeVert");
+		modelShaders[1] = compileShader(model_fragShader, GL_FRAGMENT_SHADER, "cubeFrag");
+
+		modelProgram = glCreateProgram();
+		glAttachShader(modelProgram, modelShaders[0]);
+		glAttachShader(modelProgram, modelShaders[1]);
+		glBindAttribLocation(modelProgram, 0, "in_Position");
+		glBindAttribLocation(modelProgram, 1, "in_Normal");
+		linkProgram(modelProgram);
+	}
+	void cleanupModel() {
+
+		glDeleteBuffers(2, modelVbo);
+		glDeleteVertexArrays(1, &modelVao);
+
+		glDeleteProgram(modelProgram);
+		glDeleteShader(modelShaders[0]);
+		glDeleteShader(modelShaders[1]);
+	}
+	void updateModel(const glm::mat4& transform) {
+		objMat = transform;
+	}
+	void drawModel() {
+
+		glBindVertexArray(modelVao);
+		glUseProgram(modelProgram);
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
+		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+
+		glDrawArrays(GL_TRIANGLES, 0, 100000);
 
 
 		glUseProgram(0);

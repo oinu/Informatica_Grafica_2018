@@ -1,2 +1,14 @@
-﻿  main.cpp
-  GL_framework.vcxproj -> C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\glframework_LoadModelToonShading\code\x64\Debug\GL_framework.exe
+﻿  render_prims.cpp
+  render.cpp
+c:\users\alumne\desktop\infografica\informatica_grafica_2018\aa3_theeverfallingwheel\code\src\render.cpp(62): warning C4305: 'initializing': truncation from 'double' to 'float'
+  physics.cpp
+  main.cpp
+  my_render_code.cpp
+  load_obj.cpp
+  imgui_impl_sdl_gl3.cpp
+  imgui_draw.cpp
+  imgui_demo.cpp
+  imgui.cpp
+  Generating Code...
+     Creating library C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\AA3_TheEverFallingWheel\code\x64\Debug\GL_framework.lib and object C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\AA3_TheEverFallingWheel\code\x64\Debug\GL_framework.exp
+  GL_framework.vcxproj -> C:\Users\alumne\Desktop\InfoGrafica\Informatica_Grafica_2018\AA3_TheEverFallingWheel\code\x64\Debug\GL_framework.exe

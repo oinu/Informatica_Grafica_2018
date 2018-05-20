@@ -257,18 +257,21 @@ void GLrender(double currentTime) {
 	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[1], glm::vec3(1.f, 0.f, 0.f));
 	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));*/
 
-	RV::_modelView = glm::translate(RV::_modelView, glm::vec3(0.0f, -20.0f, -50.0f));
+	RV::_modelView = glm::translate(RV::_modelView, glm::vec3(0.0f, -20.0f, -60.0f));
 	RV::_modelView = glm::rotate(RV::_modelView, glm::radians(30.0f), glm::vec3(0.f, 1.f, 0.f));
 
 	RV::_MVP = RV::_projection * RV::_modelView;
 
-	/*if(light_moves)
-		lightPos = glm::vec3(40 * cos((float)currentTime),40 * sin((float)currentTime), 0);*/
+	if (light_moves)
+	{
+		lightPos = glm::vec3(1.5*distanceCenter*cos((float)currentTime*speedMultiplayer*0.5), (1.5*distanceCenter*sin((float)currentTime*speedMultiplayer*0.5)) + 20,10);
+	}
 
 	//Center of Scene
 	Sphere::updateSphere(lightPos, 1.0f);
 	Sphere::drawSphere();
 
+	//Transform and Draw Objects
 	glm::mat4 model;
 	if (exercise == 1)
 	{
@@ -277,7 +280,7 @@ void GLrender(double currentTime) {
 			//Cube Trump
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) + 1, distanceCenter *sin((float)currentTime + distanceCabin) + 3, +1)));
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 3, +1)));
 			model = glm::scale(model, glm::vec3(0.7f));
 			Cube::updateModel(model);
 			Cube::drawModel();
@@ -285,7 +288,7 @@ void GLrender(double currentTime) {
 			//Cube Chicken
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) - 1, distanceCenter *sin((float)currentTime + distanceCabin) + 3, +1)));
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 3, +1)));
 			model = glm::scale(model, glm::vec3(0.7f));
 			Cube::updateModel(model);
 			Cube::drawModel();
@@ -295,7 +298,7 @@ void GLrender(double currentTime) {
 			{
 				model = glm::mat4(1.0);
 				model = glm::translate(model, centerScene);
-				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime + distanceCabin*i)), distanceCenter *sin((float)currentTime + distanceCabin*i), 0)));
+				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime*speedMultiplayer + distanceCabin*i)), distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin*i), 0)));
 				model = glm::scale(model, glm::vec3(2.0f));
 				Cube::updateModel(model);
 				Cube::drawModel();
@@ -306,77 +309,7 @@ void GLrender(double currentTime) {
 			//Trump
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime + distanceCabin) - 4, 1)));
-			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.03f));
-			Trump::updateModel(model);
-			Trump::drawModel();
-
-			//Chicken
-			model = glm::mat4(1.0);
-			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) - 1, distanceCenter *sin((float)currentTime + distanceCabin) - 3, +1)));
-			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(0.04f));
-			Chicken::updateModel(model);
-			Chicken::drawModel();
-
-			//Wheel
-			model = glm::mat4(1.0);
-			model = glm::translate(model, centerScene);
-			model = glm::rotate(model, (float)currentTime, glm::vec3(0.0f, 0.0f, 1.0f));
-			model = glm::scale(model, glm::vec3(0.004f));
-			Wheel::updateModel(model);
-			Wheel::drawModel();
-
-			for (int i = 0; i < 20; i++)
-			{
-				model = glm::mat4(1.0);
-				model = glm::translate(model, centerScene);
-				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime + distanceCabin*i)), distanceCenter *sin((float)currentTime + distanceCabin*i), 0)));
-				model = glm::scale(model, glm::vec3(0.005f));
-				Cabin::updateModel(model);
-				Cabin::drawModel();
-			}
-		}
-	}
-	else if (exercise == 2)
-	{
-		if (!modelActivated)
-		{
-			//Cube Trump
-			model = glm::mat4(1.0);
-			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) + 1, distanceCenter *sin((float)currentTime + distanceCabin) + 3, +1)));
-			model = glm::scale(model, glm::vec3(0.7f));
-			Cube::updateModel(model);
-			Cube::drawModel();
-
-			//Cube Chicken
-			model = glm::mat4(1.0);
-			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) - 1, distanceCenter *sin((float)currentTime + distanceCabin) + 3, +1)));
-			model = glm::scale(model, glm::vec3(0.7f));
-			Cube::updateModel(model);
-			Cube::drawModel();
-
-			//Cube Cabins
-			for (int i = 0; i < 20; i++)
-			{
-				model = glm::mat4(1.0);
-				model = glm::translate(model, centerScene);
-				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime + distanceCabin*i)), distanceCenter *sin((float)currentTime + distanceCabin*i), 0)));
-				model = glm::scale(model, glm::vec3(2.0f));
-				Cube::updateModel(model);
-				Cube::drawModel();
-			}
-		}
-		else
-		{
-			//Trump
-			model = glm::mat4(1.0);
-			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime + distanceCabin)-3, -1)));
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) - 3, -1)));
 			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::scale(model, glm::vec3(0.02f));
 			Trump::updateModel(model);
@@ -385,7 +318,7 @@ void GLrender(double currentTime) {
 			//Chicken
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) -3, -1)));
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) - 3, -1)));
 			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::scale(model, glm::vec3(0.04f));
 			Chicken::updateModel(model);
@@ -404,6 +337,76 @@ void GLrender(double currentTime) {
 				model = glm::mat4(1.0);
 				model = glm::translate(model, centerScene);
 				model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)(currentTime*speedMultiplayer + distanceCabin*i)), distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin*i), 0)));
+				model = glm::scale(model, glm::vec3(0.005f));
+				Cabin::updateModel(model);
+				Cabin::drawModel();
+			}
+		}
+	}
+	else if (exercise == 2)
+	{
+		if (!modelActivated)
+		{
+			//Cube Trump
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 3, +1));
+			model = glm::scale(model, glm::vec3(0.7f));
+			Cube::updateModel(model);
+			Cube::drawModel();
+
+			//Cube Chicken
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 3, +1));
+			model = glm::scale(model, glm::vec3(0.7f));
+			Cube::updateModel(model);
+			Cube::drawModel();
+
+			//Cube Cabins
+			for (int i = 0; i < 20; i++)
+			{
+				model = glm::mat4(1.0);
+				model = glm::translate(model, centerScene);
+				model = glm::translate(model, glm::vec3(distanceCenter*cos((float)(currentTime*speedMultiplayer + distanceCabin*i)), distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin*i), 0));
+				model = glm::scale(model, glm::vec3(2.0f));
+				Cube::updateModel(model);
+				Cube::drawModel();
+			}
+		}
+		else
+		{
+			//Trump
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin)-3, -1));
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.02f));
+			Trump::updateModel(model);
+			Trump::drawModel();
+
+			//Chicken
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::translate(model, glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) -3, -1));
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.04f));
+			Chicken::updateModel(model);
+			Chicken::drawModel();
+
+			//Wheel
+			model = glm::mat4(1.0);
+			model = glm::translate(model, centerScene);
+			model = glm::rotate(model, (float)currentTime*speedMultiplayer, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(0.004f));
+			Wheel::updateModel(model);
+			Wheel::drawModel();
+
+			for (int i = 0; i < 20; i++)
+			{
+				model = glm::mat4(1.0);
+				model = glm::translate(model, centerScene);
+				model = glm::translate(model, glm::vec3(distanceCenter*cos((float)(currentTime*speedMultiplayer + distanceCabin*i)), distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin*i), 0));
 				model = glm::scale(model, glm::vec3(0.005f));
 				Cabin::updateModel(model);
 				Cabin::drawModel();
@@ -595,7 +598,9 @@ namespace Cube {
 	in vec3 in_Position;\n\
 	in vec3 in_Normal;\n\
 	uniform vec3 lPos;\n\
+	uniform vec3 moon;\n\
 	out vec3 lDir;\n\
+	out vec3 lMoon;\n\
 	out vec4 vert_Normal;\n\
 	uniform mat4 objMat;\n\
 	uniform mat4 mv_Mat;\n\
@@ -604,6 +609,7 @@ namespace Cube {
 		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
 		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
 		lDir = normalize(lPos - gl_Position.xyz );\n\
+		lMoon = normalize(moon - gl_Position.xyz );\n\
 	}";
 
 
@@ -611,6 +617,7 @@ namespace Cube {
 		"#version 330\n\
 in vec4 vert_Normal;\n\
 in vec3 lDir;\n\
+in vec3 lMoon;\n\
 out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
@@ -622,7 +629,20 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+	vec3 sun= vec3(1.0,1.0,0.0);\n\
+	sun*=difuse;\n\
+	\n\
+	\n\
+	difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lMoon.x, lMoon.y, lMoon.z, 0.0));\n\
+	\n\
+	//Toon Shading\n\
+	//if(difuse<0.2)difuse=0.0;\n\
+	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
+	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
+	//else difuse=1.0;\n\
+	vec3 moon= vec3(0.0,0.0,1.0);\n\
+	moon*=difuse;\n\
+	out_Color = vec4(((color.xyz*difuse)+(sun+moon)/2)/2, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -677,7 +697,8 @@ void main() {\n\
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+		glUniform3f(glGetUniformLocation(modelProgram, "moon"), -lightPos.x, -lightPos.y, lightPos.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.0f, 0.f);
 	
 		glDrawArrays(GL_TRIANGLES, 0, 10000);
 
@@ -731,7 +752,8 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+	vec3 sun= vec3(0.5,0.5,0.25);\n\
+	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -840,7 +862,8 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+	vec3 sun= vec3(0.5,0.5,0.25);\n\
+	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -949,7 +972,8 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+	vec3 sun= vec3(0.5,0.5,0.25);\n\
+	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -1058,7 +1082,8 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	out_Color = vec4(color.xyz * difuse, 1.0 );\n\
+	vec3 sun= vec3(0.5,0.5,0.25);\n\
+	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);

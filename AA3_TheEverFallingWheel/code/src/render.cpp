@@ -88,6 +88,18 @@ bool GetModelActivated()
 	return modelActivated;
 }
 
+//Change Camara
+int camara = 0;
+void SetCamara(int id)
+{
+	camara = id;
+	if (camara > 3)camara = 0;
+}
+int GetCamara()
+{
+	return camara;
+}
+
 
 ///////// fw decl
 namespace ImGui {
@@ -258,34 +270,52 @@ int timer=0;
 void GLrender(double currentTime) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	RV::_modelView = glm::mat4(1.f);
-	/*RV::_modelView = glm::translate(RV::_modelView, glm::vec3(RV::panv[0], RV::panv[1], RV::panv[2]));
-	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[1], glm::vec3(1.f, 0.f, 0.f));
-	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));*/
-	timer += currentTime;
-	if (timer / 100 > 20)
+	RV::_modelView = glm::mat4(1.f);	
+	//Default Camara
+	if (camara == 0)
 	{
-		timer = 0;
-		focusTrump = !focusTrump;
-	}
-	//std::cout << (int)timer/100 << std::endl;
-
-	glm::vec3 camaraTrumpChicken;
-	if (focusTrump)
-	{
-		camaraTrumpChicken = glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) -1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
-		RV::_modelView = glm::lookAt(camaraTrumpChicken, glm::vec3(camaraTrumpChicken.x + 1, camaraTrumpChicken.y, camaraTrumpChicken.z), glm::vec3(0.0, 1.0, 0.0));
-	}
-	else
-	{
-		camaraTrumpChicken = glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
-		RV::_modelView = glm::lookAt(camaraTrumpChicken, glm::vec3(camaraTrumpChicken.x - 1, camaraTrumpChicken.y, camaraTrumpChicken.z ), glm::vec3(0.0, 1.0, 0.0));
+		RV::_modelView = glm::translate(RV::_modelView, glm::vec3(0.0f, -20.0f, -70.0f));
+		RV::_modelView = glm::rotate(RV::_modelView, glm::radians(60.0f), glm::vec3(0.f, 1.f, 0.f));
 	}
 
-	//Camera en perspectiva de la noria
-	//RV::_modelView = glm::translate(RV::_modelView, glm::vec3(0.0f, -20.0f, -70.0f));
-	//RV::_modelView = glm::rotate(RV::_modelView, glm::radians(60.0f), glm::vec3(0.f, 1.f, 0.f));
+	//Shot-Countershot Camara
+	else if (camara==1)
+	{
+		timer += currentTime;
+		if (timer / 100 > 20)
+		{
+			timer = 0;
+			focusTrump = !focusTrump;
+		}
+		//std::cout << (int)timer/100 << std::endl;
 
+		glm::vec3 camaraTrumpChicken;
+		if (focusTrump)
+		{
+			camaraTrumpChicken = glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
+			RV::_modelView = glm::lookAt(camaraTrumpChicken, glm::vec3(camaraTrumpChicken.x + 1, camaraTrumpChicken.y, camaraTrumpChicken.z), glm::vec3(0.0, 1.0, 0.0));
+		}
+		else
+		{
+			camaraTrumpChicken = glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
+			RV::_modelView = glm::lookAt(camaraTrumpChicken, glm::vec3(camaraTrumpChicken.x - 1, camaraTrumpChicken.y, camaraTrumpChicken.z), glm::vec3(0.0, 1.0, 0.0));
+		}
+	}
+
+	//Lateral Camara
+	else if (camara == 2)
+	{
+		glm::vec3 focusCabin= glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin), distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
+		RV::_modelView = glm::lookAt(glm::vec3(focusCabin.x,focusCabin.y, focusCabin.z-10), focusCabin, glm::vec3(0.0, 1.0, 0.0));
+	}
+
+	//Rotating God's Eye Camara - to do
+	else if (camara == 3)
+	{
+		glm::vec3 focusCabin = glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin), distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
+		RV::_modelView = glm::lookAt(glm::vec3(focusCabin.x, focusCabin.y, focusCabin.z), centerScene, glm::vec3(0.0, 1.0, 0.0));
+	}
+	
 	RV::_MVP = RV::_projection * RV::_modelView;
 
 
@@ -312,11 +342,13 @@ void GLrender(double currentTime) {
 		lightPos = sunPos;
 		lightColor = glm::vec3(0.7f, 0.7f, 0.3f);
 	}
+
 	else if (sunPos.y >= centerScene.y)
 	{
 		lightPos = sunPos;
 		lightColor = glm::vec3(0.5f, 0.1f, 0.1f);
 	}
+
 	//Night
 	else
 	{

@@ -22,6 +22,8 @@ extern void SetExercise(int id);
 extern int GetExercise();
 extern void SetModelActivated(bool e);
 extern bool GetModelActivated();
+extern void SetCamara(int id);
+extern int GetCamara();
 
 
 extern void myRenderCode(double currentTime);
@@ -126,6 +128,10 @@ int main(int argc, char** argv) {
 					else if (id == 2)SetModelActivated(true);
 
 					SetExercise(id);
+				}
+				if (eve.key.keysym.sym == SDLK_c)
+				{
+					SetCamara(GetCamara() + 1);
 				}
 				if (eve.key.keysym.sym == SDLK_m)
 				{

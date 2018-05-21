@@ -2,6 +2,7 @@
 #include <glm\gtc\type_ptr.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <cstdio>
+#include <iostream>
 #include <cassert>
 
 #include "GL_framework.h"
@@ -16,7 +17,7 @@ std::vector< glm::vec2 > uvs;
 std::vector< glm::vec3 > normals;
 
 
-glm::vec3 lightPos;
+glm::vec3 sunPos,moonPos,lightPos;
 
 extern bool loadOBJ(const char * path,
 	std::vector < glm::vec3 > & out_vertices,
@@ -62,6 +63,8 @@ float distanceCenter = 25;
 float distanceCabin = (2*3.1415)/20;
 float speedMultiplayer = 0.5;
 glm::vec3 centerScene = glm::vec3(0.0f, 20, 0.0f);
+glm::vec3 lightColor = glm::vec3(0.5f,0.5f,0.1f);
+bool focusTrump = false;
 
 //Exercise variables
 int exercise = 1;
@@ -130,6 +133,7 @@ namespace Sphere {
 	void cleanupSphere();
 	void updateSphere(glm::vec3 pos, float radius);
 	void drawSphere();
+	void drawSphere2();
 }
 
 
@@ -235,9 +239,11 @@ void GLinit(int width, int height) {
 	uvs.clear();
 	normals.clear();
 
-	lightPos =  glm::vec3(40, 40, 0);
+	sunPos =  glm::vec3(40, 40, 0);
+	lightPos = sunPos;
+	moonPos -= sunPos;
 
-	Sphere::setupSphere(lightPos, 1.0f);
+	Sphere::setupSphere(sunPos, 1.0f);
 }
 
 void GLcleanup() {
@@ -248,7 +254,7 @@ void GLcleanup() {
 	Cabin::cleanupModel();
 	Sphere::cleanupSphere();
 }
-
+int timer=0;
 void GLrender(double currentTime) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -256,20 +262,67 @@ void GLrender(double currentTime) {
 	/*RV::_modelView = glm::translate(RV::_modelView, glm::vec3(RV::panv[0], RV::panv[1], RV::panv[2]));
 	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[1], glm::vec3(1.f, 0.f, 0.f));
 	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));*/
+	timer += currentTime;
+	if (timer / 100 > 20)
+	{
+		timer = 0;
+		focusTrump = !focusTrump;
+	}
+	//std::cout << (int)timer/100 << std::endl;
 
-	RV::_modelView = glm::translate(RV::_modelView, glm::vec3(0.0f, -20.0f, -60.0f));
-	RV::_modelView = glm::rotate(RV::_modelView, glm::radians(30.0f), glm::vec3(0.f, 1.f, 0.f));
+	glm::vec3 camaraTrumpChicken;
+	if (focusTrump)
+	{
+		camaraTrumpChicken = glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) -1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
+		RV::_modelView = glm::lookAt(camaraTrumpChicken, glm::vec3(camaraTrumpChicken.x + 1, camaraTrumpChicken.y, camaraTrumpChicken.z), glm::vec3(0.0, 1.0, 0.0));
+	}
+	else
+	{
+		camaraTrumpChicken = glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 20, 0);
+		RV::_modelView = glm::lookAt(camaraTrumpChicken, glm::vec3(camaraTrumpChicken.x - 1, camaraTrumpChicken.y, camaraTrumpChicken.z ), glm::vec3(0.0, 1.0, 0.0));
+	}
+
+	//Camera en perspectiva de la noria
+	//RV::_modelView = glm::translate(RV::_modelView, glm::vec3(0.0f, -20.0f, -70.0f));
+	//RV::_modelView = glm::rotate(RV::_modelView, glm::radians(60.0f), glm::vec3(0.f, 1.f, 0.f));
 
 	RV::_MVP = RV::_projection * RV::_modelView;
 
+
+	//Sun Sphere
 	if (light_moves)
 	{
-		lightPos = glm::vec3(1.5*distanceCenter*cos((float)currentTime*speedMultiplayer*0.5), (1.5*distanceCenter*sin((float)currentTime*speedMultiplayer*0.5)) + 20,10);
+		sunPos = glm::vec3(1.5*distanceCenter*cos((float)currentTime*speedMultiplayer*0.5), (1.5*distanceCenter*sin((float)currentTime*speedMultiplayer*0.5)) + 20, 10);
 	}
-
-	//Center of Scene
-	Sphere::updateSphere(lightPos, 1.0f);
+	Sphere::updateSphere(sunPos, 1.0f);
 	Sphere::drawSphere();
+
+	//Moon Sphere
+	if (light_moves)
+	{
+		moonPos = glm::vec3((-1.5*distanceCenter)*cos((float)currentTime *(speedMultiplayer*0.5)-distanceCenter), ((-1.5*distanceCenter)*sin((float)currentTime *(speedMultiplayer*0.5) - distanceCenter)) + 20, 10);
+	}
+	Sphere::updateSphere(moonPos, 1.0f);
+	Sphere::drawSphere2();
+
+	//LightPos - Postion of the light
+	//Day
+	if (sunPos.y >= 15+centerScene.y)
+	{
+		lightPos = sunPos;
+		lightColor = glm::vec3(0.7f, 0.7f, 0.3f);
+	}
+	else if (sunPos.y >= centerScene.y)
+	{
+		lightPos = sunPos;
+		lightColor = glm::vec3(0.5f, 0.1f, 0.1f);
+	}
+	//Night
+	else
+	{
+		lightPos = moonPos;
+		lightColor = glm::vec3(0.1f, 0.1f, 0.5f);
+	}
 
 	//Transform and Draw Objects
 	glm::mat4 model;
@@ -280,7 +333,7 @@ void GLrender(double currentTime) {
 			//Cube Trump
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 3, +1)));
+			model = glm::translate(model, glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) + 3, +1));
 			model = glm::scale(model, glm::vec3(0.7f));
 			Cube::updateModel(model);
 			Cube::drawModel();
@@ -309,7 +362,7 @@ void GLrender(double currentTime) {
 			//Trump
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) - 3, -1)));
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) + 1.5, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) - 3, 0)));
 			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::scale(model, glm::vec3(0.02f));
 			Trump::updateModel(model);
@@ -318,7 +371,7 @@ void GLrender(double currentTime) {
 			//Chicken
 			model = glm::mat4(1.0);
 			model = glm::translate(model, centerScene);
-			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin) - 3, -1)));
+			model = glm::translate(model, glm::vec3(glm::vec3(distanceCenter*cos((float)currentTime*speedMultiplayer + distanceCabin) - 1, distanceCenter *sin((float)currentTime*speedMultiplayer + distanceCabin)-2, 0)));
 			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::scale(model, glm::vec3(0.04f));
 			Chicken::updateModel(model);
@@ -575,7 +628,20 @@ void drawSphere() {
 	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RV::_MVP));
 	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RV::_modelView));
 	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "projMat"), 1, GL_FALSE, glm::value_ptr(RV::_projection));
-	glUniform4f(glGetUniformLocation(sphereProgram, "color"), 0.6f, 0.1f, 0.1f, 1.f);
+	glUniform4f(glGetUniformLocation(sphereProgram, "color"), 0.6f, 0.6f, 0.1f, 1.f);
+	glUniform1f(glGetUniformLocation(sphereProgram, "radius"), Sphere::radius);
+	glDrawArrays(GL_POINTS, 0, 1);
+
+	glUseProgram(0);
+	glBindVertexArray(0);
+}
+void drawSphere2() {
+	glBindVertexArray(sphereVao);
+	glUseProgram(sphereProgram);
+	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RV::_MVP));
+	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RV::_modelView));
+	glUniformMatrix4fv(glGetUniformLocation(sphereProgram, "projMat"), 1, GL_FALSE, glm::value_ptr(RV::_projection));
+	glUniform4f(glGetUniformLocation(sphereProgram, "color"), 0.1f, 0.1f, 0.5f, 1.f);
 	glUniform1f(glGetUniformLocation(sphereProgram, "radius"), Sphere::radius);
 	glDrawArrays(GL_POINTS, 0, 1);
 
@@ -600,7 +666,6 @@ namespace Cube {
 	uniform vec3 lPos;\n\
 	uniform vec3 moon;\n\
 	out vec3 lDir;\n\
-	out vec3 lMoon;\n\
 	out vec4 vert_Normal;\n\
 	uniform mat4 objMat;\n\
 	uniform mat4 mv_Mat;\n\
@@ -609,7 +674,6 @@ namespace Cube {
 		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
 		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
 		lDir = normalize(lPos - gl_Position.xyz );\n\
-		lMoon = normalize(moon - gl_Position.xyz );\n\
 	}";
 
 
@@ -617,10 +681,10 @@ namespace Cube {
 		"#version 330\n\
 in vec4 vert_Normal;\n\
 in vec3 lDir;\n\
-in vec3 lMoon;\n\
 out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
+uniform vec3 lColor;\n\
 void main() {\n\
     float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
 	\n\
@@ -629,20 +693,9 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	vec3 sun= vec3(1.0,1.0,0.0);\n\
-	sun*=difuse;\n\
 	\n\
 	\n\
-	difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lMoon.x, lMoon.y, lMoon.z, 0.0));\n\
-	\n\
-	//Toon Shading\n\
-	//if(difuse<0.2)difuse=0.0;\n\
-	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
-	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
-	//else difuse=1.0;\n\
-	vec3 moon= vec3(0.0,0.0,1.0);\n\
-	moon*=difuse;\n\
-	out_Color = vec4(((color.xyz*difuse)+(sun+moon)/2)/2, 1.0 );\n\
+	out_Color = vec4(((color.xyz*difuse)+lColor*difuse)/2, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -697,7 +750,7 @@ void main() {\n\
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform3f(glGetUniformLocation(modelProgram, "moon"), -lightPos.x, -lightPos.y, lightPos.z);
+		glUniform3f(glGetUniformLocation(modelProgram, "lColor"), lightColor.x, lightColor.y, lightColor.z);
 		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.0f, 0.f);
 	
 		glDrawArrays(GL_TRIANGLES, 0, 10000);
@@ -725,6 +778,7 @@ namespace Cabin {
 	in vec3 in_Position;\n\
 	in vec3 in_Normal;\n\
 	uniform vec3 lPos;\n\
+	uniform vec3 moon;\n\
 	out vec3 lDir;\n\
 	out vec4 vert_Normal;\n\
 	uniform mat4 objMat;\n\
@@ -744,6 +798,7 @@ in vec3 lDir;\n\
 out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
+uniform vec3 lColor;\n\
 void main() {\n\
     float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
 	\n\
@@ -752,8 +807,9 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	vec3 sun= vec3(0.5,0.5,0.25);\n\
-	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
+	\n\
+	\n\
+	out_Color = vec4(((color.xyz*difuse)+lColor*difuse)/2, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -808,7 +864,8 @@ void main() {\n\
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+		glUniform3f(glGetUniformLocation(modelProgram, "lColor"), lightColor.x, lightColor.y, lightColor.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.0f, 0.f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 10000);
 
@@ -835,6 +892,7 @@ namespace Trump {
 	in vec3 in_Position;\n\
 	in vec3 in_Normal;\n\
 	uniform vec3 lPos;\n\
+	uniform vec3 moon;\n\
 	out vec3 lDir;\n\
 	out vec4 vert_Normal;\n\
 	uniform mat4 objMat;\n\
@@ -854,6 +912,7 @@ in vec3 lDir;\n\
 out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
+uniform vec3 lColor;\n\
 void main() {\n\
     float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
 	\n\
@@ -862,8 +921,9 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	vec3 sun= vec3(0.5,0.5,0.25);\n\
-	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
+	\n\
+	\n\
+	out_Color = vec4(((color.xyz*difuse)+lColor*difuse)/2, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -918,7 +978,8 @@ void main() {\n\
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+		glUniform3f(glGetUniformLocation(modelProgram, "lColor"), lightColor.x, lightColor.y, lightColor.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.0f, 0.f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 10000);
 
@@ -945,6 +1006,7 @@ namespace Chicken {
 	in vec3 in_Position;\n\
 	in vec3 in_Normal;\n\
 	uniform vec3 lPos;\n\
+	uniform vec3 moon;\n\
 	out vec3 lDir;\n\
 	out vec4 vert_Normal;\n\
 	uniform mat4 objMat;\n\
@@ -964,6 +1026,7 @@ in vec3 lDir;\n\
 out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
+uniform vec3 lColor;\n\
 void main() {\n\
     float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
 	\n\
@@ -972,8 +1035,9 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	vec3 sun= vec3(0.5,0.5,0.25);\n\
-	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
+	\n\
+	\n\
+	out_Color = vec4(((color.xyz*difuse)+lColor*difuse)/2, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -1028,7 +1092,8 @@ void main() {\n\
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+		glUniform3f(glGetUniformLocation(modelProgram, "lColor"), lightColor.x, lightColor.y, lightColor.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.0f, 0.f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 100000);
 
@@ -1055,6 +1120,7 @@ namespace Wheel {
 	in vec3 in_Position;\n\
 	in vec3 in_Normal;\n\
 	uniform vec3 lPos;\n\
+	uniform vec3 moon;\n\
 	out vec3 lDir;\n\
 	out vec4 vert_Normal;\n\
 	uniform mat4 objMat;\n\
@@ -1074,6 +1140,7 @@ in vec3 lDir;\n\
 out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
+uniform vec3 lColor;\n\
 void main() {\n\
     float difuse = dot(normalize(vert_Normal), mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0));\n\
 	\n\
@@ -1082,8 +1149,9 @@ void main() {\n\
 	//else if(difuse>=0.2 && difuse<=0.4)difuse=0.2;\n\
 	//else if(difuse>=0.4 && difuse<0.5) difuse=0.4;\n\
 	//else difuse=1.0;\n\
-	vec3 sun= vec3(0.5,0.5,0.25);\n\
-	out_Color = vec4(((color.xyz + sun)/2) *difuse, 1.0 );\n\
+	\n\
+	\n\
+	out_Color = vec4(((color.xyz*difuse)+lColor*difuse)/2, 1.0 );\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -1138,7 +1206,8 @@ void main() {\n\
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+		glUniform3f(glGetUniformLocation(modelProgram, "lColor"), lightColor.x, lightColor.y, lightColor.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.0f, 0.f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 100000);
 
